@@ -11,19 +11,36 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @sort_by = params[:sort_by]
     @all_ratings = Movie.ratings
-    @selected_ratings = params[:ratings] || {}
+    @sort_by = params[:sort_by]
+    @selected_ratings = params[:ratings].keys unless params[:ratings].nil?
+    redirecting = false
     
-    if (@selected_ratings.keys.empty?)
-      @movies = Movie.all
-    else
-      @movies = Movie.where(rating: @selected_ratings.keys)
+    debugger
+    
+    if @sort_by.nil? and session.has_key? :sort_by
+      @sort_by = session[:sort_by]
+      session.delete(:sort_by)
+      redirecting = true
     end
-
-    unless @sort_by.nil?
-      @movies.order(@sort_by)
+    
+    if @selected_ratings.nil? and session.has_key? :ratings
+      @selected_ratings = session[:ratings]
+      session.delete(:ratings)
+      redirecting = true
     end
+    
+    if redirecting
+      redirect_to movies_path(sort_by: @sort_by, selected_ratings: @selected_ratings)
+      return
+    end
+    
+    @selected_ratings ||= @all_ratings
+    
+    session[:sort_by] = @sort_by unless @sort_by.nil?
+    session[:ratings] = params[:ratings] unless @selected_ratings == @all_ratings
+    
+    @movies = Movie.where(rating: @selected_ratings).order(@sort_by)
   end
 
   def new
