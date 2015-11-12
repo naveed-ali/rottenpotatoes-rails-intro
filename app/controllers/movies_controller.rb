@@ -16,8 +16,6 @@ class MoviesController < ApplicationController
     @selected_ratings = params[:ratings].keys unless params[:ratings].nil?
     redirecting = false
     
-    debugger
-    
     if @sort_by.nil? and session.has_key? :sort_by
       @sort_by = session[:sort_by]
       session.delete(:sort_by)
