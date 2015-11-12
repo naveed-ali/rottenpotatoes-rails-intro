@@ -13,7 +13,7 @@ class MoviesController < ApplicationController
   def index
     @all_ratings = Movie.ratings
     @sort_by = params[:sort_by]
-    @selected_ratings = params[:ratings].keys unless params[:ratings].nil?
+    @selected_ratings = params[:ratings] unless params[:ratings].nil?
     redirecting = false
     
     if @sort_by.nil? and session.has_key? :sort_by
@@ -29,11 +29,16 @@ class MoviesController < ApplicationController
     end
     
     if redirecting
-      redirect_to movies_path(sort_by: @sort_by, selected_ratings: @selected_ratings)
+      flash.keep
+      redirect_to movies_path(sort_by: @sort_by, ratings: @selected_ratings)
       return
     end
     
-    @selected_ratings ||= @all_ratings
+    if @selected_ratings.nil?
+      @selected_ratings = @all_ratings
+    else
+      @selected_ratings = @selected_ratings.keys
+    end
     
     session[:sort_by] = @sort_by unless @sort_by.nil?
     session[:ratings] = params[:ratings] unless @selected_ratings == @all_ratings
